@@ -1,0 +1,101 @@
+vue2   与  vue3 渲染性能区别:
+
+diff 优化:  https://vue-next-template-explorer.netlify.app
+  vue2   对虚拟DOM 是进行一个全局对比
+  vue3   新增了静态标记（PatchFlag）
+          生成DOM树时，只会对动态渲染的DOM数据添加标识，下次数据变化的时候只需要对有标记的DOM进行比对，
+          并且可以同归flag的信息得知当前节点要对比的内容
+
+hoistStatic 静态提升:
+  vue2   无论DOM元素是否参与更新，都会重新创建，进行渲染
+  vue3   对不参与更新的DOM元素，会提出静态提升，只会创建一次，渲染时进行复用
+
+cacheHandlers 事件侦听器缓存:
+  默认情况下onClick被视为动态监听，每次都会追踪变化，但是因为是同一个函数，不需要追踪变化，所以缓存起来使用即可。
+
+
+vue 点击事件中加括号与不加括号的区别:
+  不加括号默认第一参数为event
+  加括号需要手动传入$event才能获得事件对象
+
+vue Composition API 与 Option API
+  Option API:vue2 的data定义数据方式以及methods 声明方法;
+  Composition API的 在setup中定义数据暴露注入data中、定义方法暴露注入methods中,以供使用.
+
+vue3 setup
+  1:执行时机
+    beforeCreate: 表示组件刚刚创建,data和methods还没有初始化
+    setup
+    created: 表示组件刚刚创建,data和methods已经初始化
+  2: setup注意点
+    ~ 由于执行setup函数时,还没有执行created,所以在setup函数中，是无法使用data中的数据以及methods中的方法
+    ~ 由于不能再setup函数中使用data和methods,vue为避免错误使用，会直接将setup函数中的this定义为undefined
+    ~ setup函数只能是同步不能是异步，无法使用async awit。 
+
+vue3 reactive | ref
+  ~ ref、reactive是vue3实现响应式数据的方法
+  ~ vue2中响应式是通过defineProperty()来实现的
+  ~ vue3中响应式是通过es6中的Proxy()来实现的
+  ~ ref底层的本质还是 reactive，系统会自动根据给ref传入的值将其转换成ref(x) -> reactive({value:x})
+  ~ ref在vue中使用不需添加.value，在js/ts 中使用需要使用.value
+  注意点: ~ reactive参数必须是对象(json/arr)
+          ~ 如果传递的是其他对象
+            `修改对象，界面不会自动更新
+            `如果要更新，必须重新赋值
+          ~ 使用reactive类型的数据需要添加.value
+
+  reactive | ref 区别
+    在template中使用 ref 类型数据，vue会自动添加.value
+    在template中使用 reactive 类型数据，vue不会自动添加.value
+
+  vue如何判断是否添加.value
+    vue在解析数据前，会自动判断当前数据是否为ref类型
+    如果是就添加，不是就不添加
+
+  vue如何判断当前数据是否为ref类型
+    通过当前数据的__v_ref来判断，如果有这个私有属性，并且取值为true，那么就代表是一个ref类型数据
+  
+  默认情况下，reactive ref 都是递归监听；当数据量大时，十分消耗性能
+  shallowReactive,shallowRef,triggerRef
+    shallowReactive 只监听跟踪对应的自身属性的反应式，不执行嵌套对象的深度反应式转换
+    shallowRef 跟踪监听自身的.value突变，不会使其值具有反应性
+    triggerRef 可以跟踪监听与shallowRef手动相关的任何变化
+    无triggerreactive API
+  
+  在使用中 reactive | ref 类型的数据每次修改都会去跟踪并更新UI界面，但是这样其实很消耗性能的；
+  如果有些操作无需跟踪并且也不需要更新UI界面，那么就可以通过 toRaw() API获取元素数据，对原始数据进行修改，
+  这样就不会进行跟踪并且不会更新UI界面，对性能上就有所提升。
+  let obj = { name: 'lnj', age: 18 }
+  let state = reactive(obj)
+  let obj2 = toRaw(state)
+  obj 与 state 的关系: 引用关系，state 的本质是一个Proxy对象，在这个Proxy对象中引用了obj
+  obj.name = 'zs'
+  如果直接修改原始数据是不会更新UI界面，必须修改、使用包装后的数据才能更新UI界面。
+  let state1 = ref(obj)
+  let obj3 = toRaw(state1.value)
+  注意点: 如果需要通过 toRaw()获取 ref 类型的数据时，就必须要明确告诉 toRaw方法，所要获取的是.value 的值，
+          因为经过vue3 的处理，.value才是创建传入的元素数据
+  let obj3 = toRaw(state1.value) => let obj3 = toRaw(state1.value => obj)
+
+  ref  toRef toRefs customRef
+    let obj  = {name: 'lili'}
+    ref -> 复制 let state = ref(obj.name)
+    toRef -> 单个引用 let age = toRef(obj,'name')
+    toRefs -> 对象引用 let state = toRefs(obj)
+    customRef -> 创建自定义ref
+    区别:
+      ref -> 修改响应式数据，UI界面自动更新，但不会影响原始数据
+      toRef -> 修改响应式数据，UI界面不会更新，但会影响原始数据
+        使用: 如果需要响应式数据和原始数据关联，并且更新响应式数据后不更新UI，就可以使用 toRef
+      toRefs -> 在 toRef 的基础上，能够直接引入对象
+        使用: 与 toRef 等同
+        
+
+
+
+
+  
+  
+
+
+
