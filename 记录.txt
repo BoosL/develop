@@ -82,13 +82,52 @@ vue3 reactive | ref
     ref -> 复制 let state = ref(obj.name)
     toRef -> 单个引用 let age = toRef(obj,'name')
     toRefs -> 对象引用 let state = toRefs(obj)
-    customRef -> 创建自定义ref
+    customRef -> 创建自定义ref  返回一个ref对象，可以显式地控制依赖追踪和触发响应
+                function myRef(value){
+                  return customRef((track,trigger)=>{
+                    // 调用网络请求
+                    return{
+                      get(){
+                        track(); // 告诉vue这个数据是需要追踪变化的
+                        console.log('get',value);
+                        return value;
+                        // 注意点:
+                        // 不能再get方法中发送网络请求
+                        // 渲染界面 -> 调用get -> 发送网络请求
+                        // 保存数据 -> 更新界面 -> 调用get
+                      },
+                      set(newValue){
+                        console.log('set',newValue);
+                        value = newValue;
+                        trigger(); // 告诉vue 触发界面更新
+                      }
+                    }
+                  })
+                }
     区别:
       ref -> 修改响应式数据，UI界面自动更新，但不会影响原始数据
       toRef -> 修改响应式数据，UI界面不会更新，但会影响原始数据
         使用: 如果需要响应式数据和原始数据关联，并且更新响应式数据后不更新UI，就可以使用 toRef
       toRefs -> 在 toRef 的基础上，能够直接引入对象
         使用: 与 toRef 等同
+
+  vue3 获取元素
+  eg: <div ref="box">我是123</div>
+      setup(){
+        let box = ref(null); 
+        console.log(box.value) //null 无法获取
+        // 生命周期
+        onMounted(() => {
+          console.log('onMounted',box.value)
+        })
+        return{ box }
+      }
+  
+  vue3 readonly 用于创建一个只读的数据，并且是递归只读
+        shallowReadonly 用于创建一个只读的数据，但不是递归只读
+        const: 赋值保护，不能给变量重新赋值
+        readonly: 属性保护，不能给属性重新赋值
+    
         
 
 
