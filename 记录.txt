@@ -127,7 +127,69 @@ vue3 reactive | ref
         shallowReadonly 用于创建一个只读的数据，但不是递归只读
         const: 赋值保护，不能给变量重新赋值
         readonly: 属性保护，不能给属性重新赋值
-    
+  
+  vue3 响应式原理 Proxy
+    let state = new Proxy(obj,{
+      get(obj,key){
+        return obj[key];
+      },
+      set(obj,key,value){
+        // 需要return 一个返回值 告诉Proxy当前操作是否成功
+        return true;
+      }
+    })
+  
+  function shallowReactive(obj){
+    return new Proxy(obj,{
+      get(obj,key){
+        return obj[key];
+      },
+      set(obj,key,val){
+        obj[key] = val
+        // 需要return 一个返回值 告诉Proxy当前操作是否成功
+        return true;
+      }
+    })
+  }
+
+  function shallowRef(val){
+    return shallowReactive({value:val})
+  }
+
+  function reactive(obj){
+    if(typeof obj === 'object'){
+      if(obj instanceof Array){
+        obj.forEach((item,, index) =>{
+          // 如果是数组，则取出数组中的，每一个元素，
+          // 判断每个元素是否是一个对象，如果是，那么需要包装成 Proxy
+          if(typeof item === 'object'){
+            obj[index] = reactive(item)
+          }
+        })
+      } else{
+        // 如果是一个对象，则取出对象属性的值，
+        // 判断对象属性的取值是否是一个对象，如果是，那么需要包装成 Proxy
+        for(let key in obj){
+          let item = obj[key];
+          if(typeof item === 'object'){
+            obj[key] = reactive(item)
+          }
+        }
+      }
+      return new Proxy(obj,{
+        get(obj,key){
+          return obj[key];
+        },
+        set(obj,key,val){
+          obj[key] = val
+          // 需要return 一个返回值 告诉Proxy当前操作是否成功
+          return true;
+        }
+      })
+    } else {
+
+    }
+  }
         
 
 
