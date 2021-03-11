@@ -130,7 +130,7 @@ module.exports = {
     // PWA 插件相关配置
   },
   devServer: {
-    host: "192.168.1.54",  // 访问域名
+    host: "192.168.1.63",  // 访问域名
     port: 8000, // 端口号
     https: false, // https:{type:Boolean}
     open: true, //配置自动启动浏览器  http://172.11.11.22:8888/rest/XX/

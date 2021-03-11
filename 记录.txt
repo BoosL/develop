@@ -23,10 +23,16 @@ vue Composition API 与 Option API
   Composition API的 在setup中定义数据暴露注入data中、定义方法暴露注入methods中,以供使用.
 
 vue3 setup
-  1:执行时机
-    beforeCreate: 表示组件刚刚创建,data和methods还没有初始化
+  1:执行顺序 生命周期
     setup
-    created: 表示组件刚刚创建,data和methods已经初始化
+    beforeCreate 表示组件刚刚创建,data和methods还没有初始化
+    created 表示组件刚刚创建,data和methods已经初始化
+    beforeMount 修改数据触发
+    renderTracked 跟踪虚拟 DOM 重新渲染时调用
+    unmounted   第一次进入页面不会触发，修改数据触发
+    mounted     修改dom节点触发
+    beforeUpdate 第一次进入页面不会触发，修改dom节点触发
+    updated  第一次进入页面不会触发，修改dom节点触发
   2: setup注意点
     ~ 由于执行setup函数时,还没有执行created,所以在setup函数中，是无法使用data中的数据以及methods中的方法
     ~ 由于不能再setup函数中使用data和methods,vue为避免错误使用，会直接将setup函数中的this定义为undefined
@@ -139,6 +145,7 @@ vue3 reactive | ref
       }
     })
   
+  // API 封装
   function shallowReactive(obj){
     return new Proxy(obj,{
       get(obj,key){
@@ -178,6 +185,7 @@ vue3 reactive | ref
       }
       return new Proxy(obj,{
         get(obj,key){
+          if(key === '_is_reactive') return true
           return obj[key];
         },
         set(obj,key,val){
@@ -187,10 +195,81 @@ vue3 reactive | ref
         }
       })
     } else {
-
+      console.warn(`${obj} is not object`);
     }
   }
-        
+
+  function ref(val){
+    _is_ref = true;
+    target = reactive({value:val})
+  }
+
+  function shallowReadonly(obj){
+    return new Proxy(obj,{
+      get(obj,key){
+        return obj[key];
+      },
+      set(obj,key,val){
+        // obj[key] = val
+        // 需要return 一个返回值 告诉Proxy当前操作是否成功
+        // return true;
+        console.warn(`${key}是只读的,不能赋值`)
+      }
+    })
+  }
+
+  function readonly(obj){
+    if(typeof obj === 'object'){
+      if(obj instanceof Array){
+        obj.forEach((item,, index) =>{
+          // 如果是数组，则取出数组中的，每一个元素，
+          // 判断每个元素是否是一个对象，如果是，那么需要包装成 Proxy
+          if(typeof item === 'object'){
+            obj[index] = reactive(item)
+          }
+        })
+      } else{
+        // 如果是一个对象，则取出对象属性的值，
+        // 判断对象属性的取值是否是一个对象，如果是，那么需要包装成 Proxy
+        for(let key in obj){
+          let item = obj[key];
+          if(typeof item === 'object'){
+            obj[key] = reactive(item)
+          }
+        }
+      }
+      return new Proxy(obj,{
+        get(obj,key){
+          if(key === '_is_reactive') return true
+          return obj[key];
+        },
+        set(obj,key,val){
+          // obj[key] = val
+          // 需要return 一个返回值 告诉Proxy当前操作是否成功
+          // return true;
+          console.warn(`${key}是只读的,不能赋值`)
+        }
+      })
+    } else {
+      console.warn(`${obj} is not object`);
+    }
+  }
+
+  function isReactive(obj){
+    return obj && obj._is_reactive;
+  }
+
+  function isRef(obj){
+    return obj && obj._is_ref;
+  }
+
+  function isReadonly(obj){
+    return obj && obj._is_readonly;
+  } 
+
+  function isProxy(obj){
+    return isReactive(obj) || isReadonly(obj)
+  }
 
 
 
