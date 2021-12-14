@@ -97,3 +97,32 @@ export function userInfo() {
     return false;
   }
 }
+
+// 防抖
+export function debounce(this:any,func:any,delay=0){
+  if(typeof func !== 'function'){
+    throw new TypeError("need function arguments")
+  }
+  let timer:any = null;
+  return  (...args:any) => {
+    if (timer) clearTimeout(timer);
+    timer = setTimeout(() => {
+      func.call(this, ...args);
+    }, delay);
+  }
+}
+
+//节流
+export function throttle(this:any,func:any,delay:any){
+  let prev = Date.now();
+  return () =>{
+    let context = this;
+    let args = arguments;
+    let now = Date.now();
+    if(now - prev >= delay){
+      func.apply(context,args);
+      prev = Date.now();
+    }
+  }
+}
+

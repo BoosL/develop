@@ -130,7 +130,7 @@ module.exports = {
     // PWA 插件相关配置
   },
   devServer: {
-    host: "192.168.1.63",  // 访问域名
+    host: "192.168.137.1",  // 访问域名
     port: 8000, // 端口号
     https: false, // https:{type:Boolean}
     open: true, //配置自动启动浏览器  http://172.11.11.22:8888/rest/XX/
@@ -138,11 +138,12 @@ module.exports = {
     hotOnly: true, // 热更新
     useLocalIp: true,
     disableHostCheck: true,
+    compress: true,
     contentBase: path.join(__dirname,'dist'),
     // proxy: 'http://localhost:8000'   // 配置跨域处理,只有一个代理
     proxy: {
       "/api": {
-        target: "http://b.qxy37.net/wapapis/",
+        target: "http://m.qxy37.com/wapapis",
         pathRewrite: { '^/api': '' },
         changOrigin: true, //允许跨域
         ws: true, //websocket支持

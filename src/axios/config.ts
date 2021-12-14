@@ -9,8 +9,8 @@ let protocolStr = document.location.protocol;
 // export const HOST = "http://192.168.1.166:9016"; //兴付
 // export const HOST = "http://192.168.1.235:9016" //李国
 // export const HOST = "http://192.168.1.64:9016" // 起点
-export const HOST = `${protocolStr}//b.qxy37.net/wapapis`; //朱日和
-// export const HOST = "http://m.qxy37.com/wapapis"; //正式环境
+// export const HOST = `${protocolStr}//m.qxy37.net/wapapis`; //朱日和
+export const HOST = "http://m.qxy37.com/wapapis"; //正式环境
 
 //消息中心服务器
 // export const HOST_MSG = `http://192.168.1.235:9060`

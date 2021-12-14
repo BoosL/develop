@@ -16,7 +16,7 @@ class Basic extends Abstract {
     }
 
     login(params:any) {
-        const url = "/shop/h5/open/user/sms/share/sale/login";
+        const url =  "/shop/h5/open/user/sms/share/sale/login";
         return new Promise(resolve => {
             this.postRequest({ url, params }).then(res => {
             resolve(res);
